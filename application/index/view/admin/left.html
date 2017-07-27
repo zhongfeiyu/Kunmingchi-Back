@@ -1,0 +1,14 @@
+
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span3">
+          <div class="well sidebar-nav">
+            <ul class="nav nav-list">
+              <li id="-1"><a href="{:url('Admin/index')}">信息管理</a></li>
+              <li id="-2"><a href="{:url('Admin/banner')}">banner管理</a></li>
+            </ul>
+          </div>
+        </div>
+        <script>
+        $("#-"+{$active}).addClass("active");
+        </script>

@@ -1,0 +1,139 @@
+<script src="__STATIC__/js/admin.js"></script>
+<div class="span9">
+		  <div class="row-fluid">
+			<div class="page-header">
+				<h1>首页banner</h1>
+			</div>
+			<table class="table table-bordered">
+				<tr>
+					<td>序号</td>
+					<td>标题</td>
+					<td>内容</td>
+					<td>时间</td>
+					<td>优先度</td>
+					<td>图片位置</td>
+					<td>跳转到</td>
+					<td>操作</td>
+				</tr>
+			</table>
+			<button id="newmessage" class="btn btn-success" data-toggle="modal" data-target="#myModalMessage" onclick="modalTitle('新Banner'); modalSave('保存');">新Banner</button>
+
+			<div class="modal fade" id="myModalMessage" tabindex="-1" role="dialog" aria-labelledby="myModalLabe" aria-hidden="true" style="width: 74%; left: 26%;">
+			  <div class="modal-dialog">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			        <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+			      </div>
+			      <div class="modal-body">
+			      	  <div class="form-group">
+					    <label style="float:left; margin-top:5px; margin-right:10px;">标题</label>
+					    <input type="text" class="form-control" id="title">
+					  </div>
+					  <div class="form-group">
+					    <label style="float:left; margin-top:5px; margin-right:10px;">内容</label>
+					    <input type="text" class="form-control" id="content">
+					  </div>
+					  <div class="form-group">
+					    <label style="float:left; margin-top:5px; margin-right:10px;">跳转到链接</label>
+					    <input type="text" class="form-control" id="jump_url">
+					  </div>
+					  <div class="form-group">
+					    <label style="float:left; margin-top:5px; margin-right:10px;">优先度</label>
+					    <input type="text" class="form-control" id="zdex" placeholder="1~100的整数，该值越大的banner在展示时越靠前">
+					  </div>
+					  <div class="form-group">
+						<label style="float:left; margin-top:5px; margin-right:10px;">上传图片</label>
+					    <input type="file" id="image" name="image" accept=".jpg,.jpeg,.jpe,.png,.gif,.bmp" class="form-control" placeholder="选择文件"> 
+					  </div>
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+			        <button type="button" id="modalSave" class="btn btn-primary">保存</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+		  </div>
+        </div>
+      </div>
+<script type="text/javascript">
+	$('#modalSave').click(function(){
+		$.ajaxFileUpload({
+			url: "{:url('Admin/changeBanner')}",
+			data:{
+				'content': $('#content').val(),
+				'title': $('#title').val(),
+				'banner_id': banner_id,
+				'jump_url': $('#jump_url').val(),
+				'zdex': $('#zdex').val(),
+			},
+			dataType:'json',
+        	fileElementId: 'image',
+			success: function (str){
+				if (str.success==1){
+					alert("提交成功");	
+				} 
+				else if (str.success==0) {
+					alert("提交失败");
+				}
+            },
+            error: function (data, status, e)//服务器响应失败处理函数
+            {
+                alert("提交成功");	
+            }
+		});
+	});
+		function modalEdit(obj){
+				banner_id = $(obj).data('id');
+				modalTitle('编辑banner');
+		  		modalSave('保存更改');
+		  		$("#title").val($(obj).data('title'));
+		  		$("#content").val($(obj).data('content'));
+		  		$("#zdex").val($(obj).data('zdex'));
+		  		$("#jump_url").val($(obj).data('jump_url'));
+		  }
+		  $('#newmessage').click(function(){
+		  		banner_id = 0;
+		  		$('#title').val('');
+			  	UE.getEditor('container').execCommand('cleardoc');
+		  });
+		  function messageDelete(obj){
+		  		$.ajax({
+		  			url: "{:url('Admin/deleteBanner')}",
+		  			data: {'banner_id': $(obj).data('id')},
+		  			success:function(e){
+		  				if(e.success) alert("删除成功");
+		  				else alert(e.err_msg);
+		  			},
+		  			error: function(){
+		  				alert('网络错误！');
+		  			}
+		  		});
+		 } 
+
+	$(window).load(function(){
+		loadData();
+	});
+	function loadData(){
+		$.ajax({
+			url:"{:url('Info/banners')}",
+			success:function(e){
+				if(e.success == 1){
+					var string = '';
+					e.banners.forEach(function(value, index, array) {
+						string += '<tr><td>'+ value.banner_id +'</td><td>'+ value.title+'</td><td>'+value.content+'</td><td>'+value.time+'</td><td>'+value.zdex+'</td><td>'+value.img_url+'</td><td>'+value.jump_url+'</td>';
+						string += "<td><div class='btn-group'><button class='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>操作 <span class='caret'></span></button><ul class='dropdown-menu'>";
+						string += "<li><a href='#' class='messageupdate' onclick='modalEdit(this)' data-toggle='modal' data-target='#myModalMessage' data-id='"+value.banner_id+"' data-title='"+value.title+"' data-content='"+value.content+"' data-zdex='"+value.zdex+"' data-jump_url='"+value.jump_url+"'>";
+						string += "<i class='icon-pencil'></i> 编辑</a></li><li><a class='messagedelete' onclick='messageDelete(this)' data-id='"+value.banner_id+"'><i class='icon-trash'></i> 删除</a></li></ul></div></td></tr>";
+					});	
+					$('.table').append(string);
+				}
+				else alert(e.err_msg);
+			},
+			error:function(){
+				alert('网络超时');
+			}
+		});
+	}
+</script>

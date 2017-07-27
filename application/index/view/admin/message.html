@@ -1,0 +1,199 @@
+<script src="__STATIC__/js/admin.js"></script>
+<div class="span9">
+		  <div class="row-fluid">
+			<div class="page-header">
+				<h1>新闻信息</h1>
+			</div>
+			<table class="table table-bordered">
+					<tr>
+						<td>序号<d>
+						<td>标题<d>
+						<td>时间<d>
+						<td>操作<d>
+					</tr>
+			</table>
+			<div id="number" >
+				<div style="margin:20px;"class="btn-group" id='page-group' role="group" aria-label="...">
+				</div>
+				     <div class=" input-append input-prepend" style="position:relative;margin-bottom:0px;">
+				      	<div style="display:inline;">
+						  <span class="add-on">到第</span><input id='turn-input' class="span3" style="height:30px;" name="page" type="text"><span class="add-on">页</span>
+						   <button class="btn btn-success" id='turn-button' style="margin-left:20px;">转到</button>
+				      	</div>
+					 </div>
+					 <script type="text/javascript">
+					 $('#turn-button').click(function(){
+					 	var page = $('#turn-input').val();
+					 	if(page == '') return; 
+					 	else loadData(page);
+					 });
+					 </script>
+				 </div>
+				 <br/>
+			<button id="newmessage" class="btn btn-success" data-toggle="modal" data-target="#myModalMessage" onclick="modalTitle('新信息'); modalSave('保存');" style="margin-left:20px;">新信息</button>
+
+			<div class="modal fade" id="myModalMessage" tabindex="-1" role="dialog" aria-labelledby="myModalLabe" aria-hidden="true" style="width: 100%; left: 6%;">
+			  <div class="modal-dialog">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			        <h4 class="modal-title" id="myModalLabel">编辑</h4>
+			      </div>
+			      <div class="modal-body">
+			      	  <div class="form-group">
+					    <label style="float:left; margin-top:5px; margin-right:10px;">标题</label>
+					    <input type="text" class="form-control" id="title" placeholder="标题">
+					  </div>
+					  
+				    <script id="container" name="content" type="text/plain" style='height:300px;'>
+				        
+				    </script>
+				    <!-- 配置文件 -->
+				    <script type="text/javascript" src="__STATIC__/ueditor/ueditor.config.js"></script>
+				    <!-- 编辑器源码文件 -->
+				    <script type="text/javascript" src="__STATIC__/ueditor/ueditor.all.js"></script>
+				    <!-- 实例化编辑器 -->
+				    <script type="text/javascript">
+				        var ue = UE.getEditor('container');
+				    </script>
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+			        <button type="button" id="modalSave" class="btn btn-primary">保存</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+		  </div>
+        </div>
+      </div>
+<script type="text/javascript">
+	$('#modalSave').click(function(){
+		$.ajax({
+			url: "{:url('Admin/changeNews')}",
+			data:{
+				'content': myHTMLEnCode(UE.getEditor('container').getContent()),
+				'title': $('#title').val(),
+				'news_id': news_id,
+			},
+			dataType:'json',
+			success: function(result){
+				if(result.success == 1) alert('保存成功！');
+				else alert(result.err_msg);
+			},
+			error: function(result){
+				alert('网络错误！');
+			},
+		});
+	});
+		function modalEdit(obj){
+				news_id = $(obj).data('id');
+		  		$.ajax({
+		  			url: "{:url('Info/anews')}",
+		  			data: {'news_id':[news_id]},
+		  			success: function (result) {
+		  				var data = result.news[0];
+		  				$("#title").val(data.title);
+			  			var uEditorDOM = UE.getEditor('container');
+				  		uEditorDOM.execCommand('selectall');
+			  			uEditorDOM.execCommand('inserthtml',myHTMLDeCode(data.content));
+			            var tmp = myHTMLEnCode(uEditorDOM.getContent());
+			            atest = (myHTMLDeCode(data.content).replace('\\',''));
+			            uEditorDOM.execCommand('selectall');
+			            uEditorDOM.execCommand('inserthtml', myHTMLDeCode(tmp).replace('\\',''));
+			            modalTitle('编辑信息');
+		  				modalSave('保存更改');
+		  			},
+		  			error: function(){ 
+		  				alert('网络错误！');
+		  			}
+		  		});
+		  		
+		  }
+		  $('#newmessage').click(function(){
+		  		news_id = 0;
+		  		$('#title').val('');
+			  	UE.getEditor('container').execCommand('cleardoc');
+		  });
+		  $('.messagedelete').click(function(){
+		  		$.ajax({
+		  			url: "{:url('Admin/deleteNews')}",
+		  			data: {'news_id': $(this).data('id')},
+		  			success:function(e){
+		  				if(e.success) alert("删除成功");
+		  				else alert(e.err_msg);
+		  			},
+		  			error: function(){
+		  				alert('网络错误！');
+		  			}
+		  		});
+		  });
+
+	$(window).load(function(){
+		loadData(1);
+	});
+	function loadData(page){
+		$.ajax({
+			url:"{:url('Info/news')}",
+			data:{
+				'page': page,
+				'page_size': 10,
+				'content': 0,
+			},
+			dataType:'json',
+			success:function(e){
+				if(e.success == 1){
+					$('.list-roles').html('');
+					var string = '';
+					e.news.forEach(function(value, index, array) {
+						string += '<tr><td>'+ value.news_id +'</td><td>'+ value.title+'</td><td>'+value.time+'</td>';
+						string += "<td><div class='btn-group'><button class='btn btn-default dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>操作 <span class='caret'></span></button>";
+						string += "<ul class='dropdown-menu'><li><a href='#' onclick='modalEdit(this)' class='messageupdate' data-toggle='modal' data-target='#myModalMessage' data-id='"+value.news_id+"' >";
+						string += "<i class='icon-pencil'></i> 编辑</a></li><li><a href='#' class='messagedelete' data-id='"+value.news_id+"><i class='icon-trash'></i> 删除</a></li></ul></div></td></>";
+					});	
+					$('.table').append(string);
+					$('#page-group').html('');
+					var string='';
+					if(e.page_num <= 5) {
+						for (var i = 1; i <= e.page_num; i++) {
+							if(i == page) string += "<button class='btn btn-default' disabled>"+ i + "&nbsp;</button>";
+							else string += "<button class='btn btn-default' onclick='loadData("+i+")'>"+i+"&nbsp;</button>";
+						};
+					}
+					else{
+						if(page >= 3 && page <=e.page_num-2) {
+							string += "<button class='btn btn-default' onclick='loadData(1)'>1&nbsp;</button>";
+							if(page-2 != 1) string += "<button class='btn btn-default' disabled>...&nbsp;</button>";
+							for (var i = page-1; i <= page+1; i++) {
+								if(i == page) string += "<button class='btn btn-default' disabled>"+ i + "&nbsp;</button>";
+								else string += "<button class='btn btn-default' onclick='loadData("+i+")'>"+i+"&nbsp;</button>";
+							};
+							if(page+2 != e.page_num)string += "<button class='btn btn-default' disabled>...&nbsp;</button>";
+							string += "<button class='btn btn-default' onclick='loadData("+e.page_num+")'>"+e.page_num+"&nbsp;</button>";
+						}
+						else if(page < 3) {
+							for (var i = 1; i <= 3; i++) {
+								if(i == page) string += "<button class='btn btn-default' disabled>"+ i + "&nbsp;</button>";
+								else string += "<button class='btn btn-default' onclick='loadData("+i+")'>"+i+"&nbsp;</button>";
+							};
+							string += "<button class='btn btn-default' disabled>...&nbsp;</button>";
+							string += "<button class='btn btn-default' onclick='loadData("+e.page_num+")'>"+e.page_num+"&nbsp;</button>";
+						}
+						else {
+							string += "<button class='btn btn-default' onclick='loadData(1)'>1&nbsp;</button>";
+							string += "<button class='btn btn-default' disabled>...&nbsp;</button>";
+							for (var i = e.page_num-2; i <= e.page_num; i++) {
+								if(i == page) string += "<button class='btn btn-default' disabled>"+ i + "&nbsp;</button>";
+								else string += "<button class='btn btn-default' onclick='loadData("+i+")'>"+i+"&nbsp;</button>";
+							};
+						}
+					}
+				}
+				else alert(e.err_msg);
+			},
+			error:function(){
+				alert('网络超时');
+			}
+		});
+	}
+</script>

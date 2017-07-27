@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Admin | Strass</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin panel developed with the Bootstrap from Twitter.">
+    <meta name="author" content="travis">
+
+    <link href="__STATIC__/css/bootstrap.css" rel="stylesheet">
+    <link href="__STATIC__/css/bootstrap-theme.css" rel="stylesheet">
+    <link href="__STATIC__/css/site.css" rel="stylesheet">
+
+    <script src="__STATIC__/js/jquery.min.js"></script>
+    <script src="__STATIC__/js/bootstrap.js"></script>
+  </head>
+  <body style="background: url("+"{:url('__STATIC__/images/bg.png')}"+");">
+    <div style="width:600px;margin: 100px auto;">
+      <form class="form-horizontal" action="{:url('Admin/loginSubmit')}" method='post'>
+        <div class="form-group">
+          <label for="inputEmail3" class="col-sm-2 control-label">用户名</label>
+          <div class="col-sm-10">
+            <input type="rexr" class="form-control" name='username'>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+          <div class="col-sm-10">
+            <input type="password" class="form-control" name='password'>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-default">登陆</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </body>
